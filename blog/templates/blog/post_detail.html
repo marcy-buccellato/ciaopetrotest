@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% load i18n %}
+{% load django_markdown %}
+{% load comments %}
+{% load static %}
+
+{% block page_title %}
+    {{ object.title }} | {{ site.name }}
+{% endblock page_title %}
+
+{% block extra_style %}
+    <!-- Photo Gallery style -->
+    <link  href="http://cdnjs.cloudflare.com/ajax/libs/fotorama/4.6.4/fotorama.css" rel="stylesheet"> <!-- 3 KB -->
+
+{% endblock extra_style %}
+
+{% block content %}
+    <div class="post post-detail">
+        <div class="image">
+
+            {% if object.featured_image %}
+                <img class="featured-image" width="100%" height="356"
+                     src="{{ object.featured_image.url }}">
+            {% endif %}
+
+            <h1 class="title">{{ object.title }}</h1>
+
+        </div>
+        <div class="content">
+            <p class="date">{{ object.published_date|date:"F d, Y" }}</p>
+            {% if object.tags.all %}
+                <p class="tags">Tagged under {{ object.tags.all|join:", " }}</p>
+            {% endif %}
+
+            <p>{{ object.text|markdown }}</p>
+        </div>
+    </div>
+
+    {% if object.gallery %}
+        <div class="post-section">
+            <h3>Photos</h3>
+            <div class="fotorama"
+                 data-width="100%"
+                 data-height="376"
+                 data-autoplay="true"
+                 data-nav="thumbs">
+                {% for image in object.gallery.public %}
+                    <a href="/media/{{ image.image }}">
+                        <img src="{{ image.get_thumbnail_url }}"
+                            alt="{{ image.title }}">
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <ul class="pager">
+        {% with previous_object=object.get_previous_by_created_date next_object=object.get_next_by_created_date %}
+            {% if previous_object %}
+                <li class="previous">
+                    <a href="{% url "post_detail" slug=previous_object.slug %}">&larr; {{ previous_object.title }}</a>
+                </li>
+            {% endif %}
+            {% if next_object %}
+                <li class="next">
+                    <a href="{% url "post_detail" slug=next_object.slug %}">{{ next_object.title }} &rarr;</a>
+                </li>
+            {% endif %}
+        {% endwith %}
+    </ul>
+{% endblock content %}
+
+{% block extra_script %}
+    <!-- Photo Gallery js -->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/fotorama/4.6.4/fotorama.js"></script> <!-- 16 KB -->
+
+{% endblock extra_script %}
